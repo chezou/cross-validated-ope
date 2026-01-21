@@ -7,3 +7,4 @@ scikit-learn >= 1.2.2, <= 1.4.2
 tqdm
 scipy
 dacite
+sb-obp >= 0.5.5

@@ -141,6 +141,73 @@ plot:
 ### The complete list of configurable parameters with their default values can be found in the src/utils/config.py file.  
 ```
 
+## Using Open Bandit Dataset
+
+This codebase supports the Open Bandit Dataset (OBD) from ZOZO Research. The dataset contains real-world logged bandit feedback data from fashion e-commerce recommendation.
+
+### Installation
+
+The Open Bandit Pipeline (OBP) library is included in the requirements. After installing dependencies, you can use the dataset directly:
+
+```bash
+pip install -r requirements.txt
+```
+
+### Usage
+
+To use the Open Bandit Dataset, specify `openbandit` as the dataset module in your config file:
+
+```yaml
+dataset:
+  module: openbandit
+  kwargs:
+    behavior_policy: random  # Options: "random" or "bts"
+    campaign: all            # Options: "all", "men", or "women"
+```
+
+**Parameters:**
+- `behavior_policy`: Which behavior policy data to load
+  - `"random"`: Random policy (uniform distribution)
+  - `"bts"`: Bernoulli Thompson Sampling policy
+- `campaign`: Which fashion campaign to use
+  - `"all"`: All logged data
+  - `"men"`: Men's fashion campaign
+  - `"women"`: Women's fashion campaign
+- `data_dir`: Directory to store downloaded and cached data (default: "data/datasets")
+
+**Note:** The dataset is automatically cached in the `data_dir` after first download for faster subsequent loads (typically 100x+ speedup).
+
+### OBP Policies
+
+The codebase includes adapters for common Open Bandit Pipeline policies. You can use any of these as logging or target policies:
+
+**Context-Free Policies:**
+- `obp_random`: Random/uniform policy
+- `obp_epsilon_greedy`: Epsilon-greedy policy
+  - Parameters: `epsilon` (default: 0.1)
+
+**Contextual Policies:**
+- `obp_lin_epsilon_greedy`: Linear epsilon-greedy
+  - Parameters: `epsilon` (default: 0.1)
+- `obp_linucb`: Linear Upper Confidence Bound
+  - Parameters: `epsilon` (default: 0.1)
+- `obp_lints`: Linear Thompson Sampling
+- `obp_logistic_epsilon_greedy`: Logistic epsilon-greedy
+  - Parameters: `epsilon` (default: 0.1)
+- `obp_logistic_ucb`: Logistic Upper Confidence Bound
+  - Parameters: `epsilon` (default: 0.1)
+- `obp_logistic_ts`: Logistic Thompson Sampling
+
+### Example Configuration
+
+See `configs/openbandit_example.yaml` for a complete example. To run it:
+
+```bash
+python src/run.py --config configs/openbandit_example.yaml
+```
+
+This example uses the Open Bandit Dataset with a random logging policy and LinUCB target policy, evaluating various OPE estimators.
+
 ## Developing a New Tuning Method/Estimator
 It is straightforward to implement a new method into this codebase. The easiest way is to copy the existing estimator, for example, SwitchDR, and change the bodies of its methods. Then, do not forget to import the class in the [\_\_init__.py file](src/estimators/__init__.py). The same follows for a new tuning method.
 

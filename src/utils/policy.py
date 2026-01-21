@@ -99,5 +99,51 @@ def get_policy(name = "uniform", X=None, y=None, a_num=10000, preprocessing = []
         return UniformPolicy(a_num=a_num)
     if name == "random":
         return RandomSoftmaxPolicy(a_num=a_num, **kwargs).fit(X, y)
-    
+
+    # OBP policies
+    if name.startswith("obp_"):
+        from obp.policy import (
+            Random, EpsilonGreedy, LinEpsilonGreedy, LinUCB, LinTS,
+            LogisticEpsilonGreedy, LogisticUCB, LogisticTS
+        )
+        from utils.obp_policy import OBPPolicyAdapter
+
+        dim = X.shape[1] if X is not None else 10  # Default feature dimension
+
+        if name == "obp_random":
+            obp_policy = Random(n_actions=a_num)
+            adapter = OBPPolicyAdapter(obp_policy, a_num=a_num, policy_type="context_free", **kwargs)
+        elif name == "obp_epsilon_greedy":
+            epsilon = kwargs.get("epsilon", 0.1)
+            obp_policy = EpsilonGreedy(n_actions=a_num, epsilon=epsilon)
+            adapter = OBPPolicyAdapter(obp_policy, a_num=a_num, policy_type="context_free", **kwargs)
+        elif name == "obp_lin_epsilon_greedy":
+            epsilon = kwargs.get("epsilon", 0.1)
+            obp_policy = LinEpsilonGreedy(n_actions=a_num, dim=dim, epsilon=epsilon)
+            adapter = OBPPolicyAdapter(obp_policy, a_num=a_num, policy_type="contextual", **kwargs)
+        elif name == "obp_linucb":
+            epsilon = kwargs.get("epsilon", 0.1)
+            obp_policy = LinUCB(n_actions=a_num, dim=dim, epsilon=epsilon)
+            adapter = OBPPolicyAdapter(obp_policy, a_num=a_num, policy_type="contextual", **kwargs)
+        elif name == "obp_lints":
+            obp_policy = LinTS(n_actions=a_num, dim=dim)
+            adapter = OBPPolicyAdapter(obp_policy, a_num=a_num, policy_type="contextual", **kwargs)
+        elif name == "obp_logistic_epsilon_greedy":
+            epsilon = kwargs.get("epsilon", 0.1)
+            obp_policy = LogisticEpsilonGreedy(n_actions=a_num, dim=dim, epsilon=epsilon)
+            adapter = OBPPolicyAdapter(obp_policy, a_num=a_num, policy_type="contextual", **kwargs)
+        elif name == "obp_logistic_ucb":
+            epsilon = kwargs.get("epsilon", 0.1)
+            obp_policy = LogisticUCB(n_actions=a_num, dim=dim, epsilon=epsilon)
+            adapter = OBPPolicyAdapter(obp_policy, a_num=a_num, policy_type="contextual", **kwargs)
+        elif name == "obp_logistic_ts":
+            obp_policy = LogisticTS(n_actions=a_num, dim=dim)
+            adapter = OBPPolicyAdapter(obp_policy, a_num=a_num, policy_type="contextual", **kwargs)
+        else:
+            raise NotImplementedError(f"Unknown OBP policy: {name}")
+
+        if X is not None and y is not None:
+            adapter.fit(X, y)
+        return adapter
+
     raise NotImplementedError("Unknown policy name")

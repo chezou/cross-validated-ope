@@ -163,7 +163,7 @@ class PASIFTuner:
         tensor_dataset = torch.utils.data.TensorDataset(
             x_and_a, w, torch.from_numpy(pi_0), torch.from_numpy(pi_e[np.arange(len(x)), a])
         )
-        dataloader = DataLoader(tensor_dataset, batch_size=self.batch_size, shuffle=True, pin_memory=True)
+        dataloader = DataLoader(tensor_dataset, batch_size=self.batch_size, shuffle=True, pin_memory=torch.cuda.is_available())
 
         self.net = Net().to(device)
         optimizer = torch.optim.Adam(self.net.parameters(), lr=self.lr)
